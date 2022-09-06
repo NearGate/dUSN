@@ -53,11 +53,11 @@ impl Contract {
             FungibleTokenMetadata {
                 spec: FT_METADATA_SPEC.to_string(),
                 name: "dUSN".to_string(),
-                symbol: "dUSN".to_string(),
+                symbol: "DUSN".to_string(),
                 icon: Some(DATA_IMAGE_SVG_NEAR_ICON.to_string()),
                 reference: None,
                 reference_hash: None,
-                decimals: 24,
+                decimals: 18,
             },
             AccountId::new_unchecked(String::from("usn")),
         )
