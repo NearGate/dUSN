@@ -68,6 +68,7 @@ trait RefFinance {
 }
 
 pub struct RefConfig {
+    pub usn_address: &'static str,
     pub ref_address: &'static str,
     pub farm_address: &'static str,
     pub pool_id: u64,
@@ -77,6 +78,7 @@ pub struct RefConfig {
 
 pub(crate) const REF_CONFIG: RefConfig = if cfg!(feature = "mainnet") {
     RefConfig {
+        usn_address: "usn",
         ref_address: "v2.ref-finance.near",
         farm_address: "boostfarm.ref-labs.near",
         pool_id: 3020,
@@ -85,6 +87,7 @@ pub(crate) const REF_CONFIG: RefConfig = if cfg!(feature = "mainnet") {
     }
 } else if cfg!(feature = "testnet") {
     RefConfig {
+        usn_address: "usdn.testnet",
         ref_address: "ref-finance-101.testnet",
         farm_address: "boostfarm.ref-finance.testnet",
         pool_id: 494,
@@ -92,7 +95,9 @@ pub(crate) const REF_CONFIG: RefConfig = if cfg!(feature = "mainnet") {
         reward_token_id: "usdc.fakes.testnet",
     }
 } else {
+    // TODO : for which case ?
     RefConfig {
+        usn_address: "usn",
         ref_address: "ref.test.near",
         farm_address: "boostfarm-ref.test.near",
         pool_id: 3020,

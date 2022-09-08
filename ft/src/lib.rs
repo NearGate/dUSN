@@ -20,6 +20,8 @@ pub mod ref_finance;
 pub mod ref_function;
 pub mod utils;
 
+use crate::ref_finance::REF_CONFIG;
+
 use near_contract_standards::fungible_token::metadata::{
     FungibleTokenMetadata, FungibleTokenMetadataProvider, FT_METADATA_SPEC,
 };
@@ -59,7 +61,7 @@ impl Contract {
                 reference_hash: None,
                 decimals: 18,
             },
-            AccountId::new_unchecked(String::from("usn")),
+            AccountId::new_unchecked(String::from(REF_CONFIG.usn_address)),
         )
     }
 
@@ -73,7 +75,7 @@ impl Contract {
             token: FungibleToken::new(b"a".to_vec()),
             metadata: LazyOption::new(b"m".to_vec(), Some(&metadata)),
             usn_token_account_id,
-            usn_reserve: 0,
+            usn_reserve: 1u128, // TODO : for avoding zero division error
         };
 
         this_contract.token.accounts.insert(&env::current_account_id(), &0);

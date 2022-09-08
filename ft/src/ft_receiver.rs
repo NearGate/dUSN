@@ -28,10 +28,15 @@ impl FungibleTokenReceiver for Contract {
         match msg.as_str() {
             "deposit" => {
                 assert!(token_account_id == self.usn_token_account_id, "Only USN can be deposited");
+                // TODO : check if 10 is proper amount as a minimal threshold
+                assert!(
+                    amount.0 >= 10_000_000_000_000_000_000u128,
+                    "USN Deposit amount should be more than 10"
+                );
 
                 // need to calculate the price of dUSN
-                let dusn_total_supply: Balance = self.token.total_supply;
-                // TODO : when usn_reserve = 0 ?!
+                // TODO : check if it is okay to add 1/10^18 dUSN for avoiding zero division error
+                let dusn_total_supply: Balance = self.token.total_supply + 1u128;
                 // TODO : check overflow when multiplication
                 let dusn_return_amount: Balance = amount.0 * dusn_total_supply / self.usn_reserve;
 
@@ -54,9 +59,15 @@ impl FungibleTokenReceiver for Contract {
                 );
 
                 // need to calculate the price of USN
-                let dusn_total_supply: Balance = self.token.total_supply;
-                // TODO : when dusn_total_supply = 0
+                // TODO : check if it is okay to add 1/10^18 dUSN for avoiding zero division error
+                let dusn_total_supply: Balance = self.token.total_supply + 1u128;
                 let usn_return_amount: Balance = amount.0 * self.usn_reserve / dusn_total_supply;
+                // TODO : check if 10 USN is proper amount as a minimal threshold
+                assert!(
+                    usn_return_amount >= 10_000_000_000_000_000_000u128,
+                    "dUSN Deposit amount should be more than {}, which is equivalent to 10 USN",
+                    10u128 * dusn_total_supply / self.usn_reserve
+                );
 
                 // withdraw USN and send it to the sender
                 promise = PromiseOrValue::Promise(self.withdraw_and_transfer_usn(
