@@ -9,8 +9,6 @@ use near_sdk::{
     PromiseOrValue,
 };
 
-use std::convert::{TryFrom, TryInto};
-
 const BASE_GAS: Gas = Gas(5_000_000_000_000);
 pub(crate) const FT_TRANSFER_GAS: Gas = BASE_GAS;
 pub(crate) const AFTER_FT_TRANSFER_GAS: Gas = BASE_GAS;
