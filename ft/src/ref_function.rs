@@ -1,6 +1,11 @@
 use crate::ref_finance::{ext_ref_finance, REF_CONFIG};
-use crate::utils::{GAS_FOR_ADD_LIQUIDITY, ONE_NEAR, ONE_YOCTO};
+use crate::utils::{
+    GAS_FOR_ADD_LIQUIDITY, GAS_FOR_ADD_STABLE_LIQUIDITY, GAS_FOR_FT_TRANSFER_CALL,
+    GAS_FOR_MFT_TRANSFER_CALL, GAS_FOR_STAKE, GAS_FOR_STORAGE_DEPOSIT, MILLI_NEAR, ONE_NEAR,
+    ONE_YOCTO,
+};
 use crate::{Contract, ContractExt};
+use near_contract_standards::fungible_token::core::ext_ft_core;
 
 use near_sdk::json_types::U128;
 use near_sdk::{env, ext_contract, near_bindgen, Balance, Promise, PromiseError};
@@ -10,17 +15,32 @@ use std::convert::TryFrom;
 // TODO : need to check these whole logic & check if the gas and deposit amount are appropriate
 impl Contract {
     pub fn ref_add_stable_liquidity(&self, amount: Balance) -> Promise {
-        ext_ref_finance::ext(
-            near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
-        )
-        .with_attached_deposit(ONE_NEAR)
-        .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
-        .add_stable_liquidity(REF_CONFIG.pool_id, vec![amount.into(), U128::from(0)], U128::from(0))
-        .then(
-            ref_callback::ext(env::current_account_id())
-                .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
-                .stake_after_adding_liquidity(),
-        )
+        ext_ft_core::ext(self.usn_token_account_id.clone())
+            .with_attached_deposit(ONE_YOCTO)
+            .with_static_gas(GAS_FOR_FT_TRANSFER_CALL)
+            .ft_transfer_call(
+                near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
+                amount.into(),
+                None,
+                "".to_string(),
+            )
+            .then(
+                ext_ref_finance::ext(
+                    near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
+                )
+                .with_attached_deposit(ONE_NEAR / 100u128)
+                .with_static_gas(GAS_FOR_ADD_STABLE_LIQUIDITY)
+                .add_stable_liquidity(
+                    REF_CONFIG.pool_id,
+                    vec![amount.into(), U128::from(0)],
+                    U128::from(0),
+                ),
+            )
+            .then(
+                ref_callback::ext(env::current_account_id())
+                    .with_static_gas(GAS_FOR_STAKE)
+                    .stake_after_adding_liquidity(),
+            )
     }
 
     pub fn ref_unstake_lp_shares_with_token_amount(&self, amount: Balance) -> Promise {
@@ -86,15 +106,15 @@ impl Contract {
         ext_ref_finance::ext(
             near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
         )
-        .with_attached_deposit(ONE_NEAR / 10u128)
-        .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
+        .with_attached_deposit(MILLI_NEAR * 125)
+        .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
         .storage_deposit(Some(env::current_account_id()), Some(true))
         .then(
             ext_ref_finance::ext(
                 near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
             )
-            .with_attached_deposit(ONE_NEAR / 10u128)
-            .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
+            .with_attached_deposit(MILLI_NEAR * 125)
+            .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
             .storage_deposit(Some(env::current_account_id()), Some(true)),
         )
     }
@@ -133,7 +153,7 @@ impl RefCallbacks for Contract {
             near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
         )
         .with_attached_deposit(ONE_YOCTO)
-        .with_static_gas(GAS_FOR_ADD_LIQUIDITY * 5)
+        .with_static_gas(GAS_FOR_MFT_TRANSFER_CALL)
         .mft_transfer_call(
             near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
             REF_CONFIG.token_id.to_string(),
