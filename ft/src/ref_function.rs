@@ -1,8 +1,7 @@
 use crate::ref_finance::{ext_ref_finance, REF_CONFIG};
 use crate::utils::{
     GAS_FOR_ADD_LIQUIDITY, GAS_FOR_ADD_STABLE_LIQUIDITY, GAS_FOR_FT_TRANSFER_CALL,
-    GAS_FOR_MFT_TRANSFER_CALL, GAS_FOR_STAKE, GAS_FOR_STORAGE_DEPOSIT, MILLI_NEAR, ONE_NEAR,
-    ONE_YOCTO,
+    GAS_FOR_MFT_TRANSFER_CALL, GAS_FOR_STAKE, GAS_FOR_STORAGE_DEPOSIT, ONE_NEAR, ONE_YOCTO,
 };
 use crate::{Contract, ContractExt};
 use near_contract_standards::fungible_token::core::ext_ft_core;
@@ -106,14 +105,14 @@ impl Contract {
         ext_ref_finance::ext(
             near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
         )
-        .with_attached_deposit(MILLI_NEAR * 125)
+        .with_attached_deposit(ONE_NEAR / 10u128)
         .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
         .storage_deposit(Some(env::current_account_id()), Some(true))
         .then(
             ext_ref_finance::ext(
                 near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
             )
-            .with_attached_deposit(MILLI_NEAR * 125)
+            .with_attached_deposit(ONE_NEAR / 10u128)
             .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
             .storage_deposit(Some(env::current_account_id()), Some(true)),
         )
