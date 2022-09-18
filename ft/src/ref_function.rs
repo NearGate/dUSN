@@ -107,14 +107,14 @@ impl Contract {
         )
         .with_attached_deposit(ONE_NEAR / 10u128)
         .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
-        .storage_deposit(Some(env::current_account_id()), Some(true))
+        .storage_deposit(Some(env::current_account_id()), Some(false))
         .then(
             ext_ref_finance::ext(
                 near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
             )
             .with_attached_deposit(ONE_NEAR / 10u128)
             .with_static_gas(GAS_FOR_STORAGE_DEPOSIT)
-            .storage_deposit(Some(env::current_account_id()), Some(true)),
+            .storage_deposit(Some(env::current_account_id()), Some(false)),
         )
     }
 }
