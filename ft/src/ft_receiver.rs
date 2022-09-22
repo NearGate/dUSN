@@ -147,16 +147,17 @@ impl Contract {
         amount: Balance,
         dusn_received_amount: Balance,
     ) -> Promise {
-        self.ref_unstake_lp_shares_with_token_amount(amount).then(
-            ext_ft_core::ext(self.usn_token_account_id.clone())
-                .with_attached_deposit(ONE_YOCTO)
-                .with_static_gas(FT_TRANSFER_GAS)
-                .ft_transfer(sender_id.clone(), amount.into(), None)
-                .then(
-                    ext_self::ext(env::current_account_id())
-                        .with_static_gas(AFTER_FT_TRANSFER_GAS)
-                        .after_usn_transfer(sender_id, amount, dusn_received_amount),
-                ),
-        )
+        self.ref_unstake_lp_shares_with_token_amount(amount)
+            .then(
+                ext_ft_core::ext(self.usn_token_account_id.clone())
+                    .with_attached_deposit(ONE_YOCTO)
+                    .with_static_gas(FT_TRANSFER_GAS)
+                    .ft_transfer(sender_id.clone(), amount.into(), None),
+            )
+            .then(
+                ext_self::ext(env::current_account_id())
+                    .with_static_gas(AFTER_FT_TRANSFER_GAS)
+                    .after_usn_transfer(sender_id, amount, dusn_received_amount),
+            )
     }
 }

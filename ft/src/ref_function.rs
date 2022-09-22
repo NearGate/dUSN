@@ -48,16 +48,15 @@ impl Contract {
         )
         .get_pool_share_price(REF_CONFIG.pool_id)
         .then(
-            ref_callback::ext(
-                near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
-            )
-            .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
-            .unstake_lp_shares_after_getting_share_price(amount),
+            ref_callback::ext(env::current_account_id())
+                .with_static_gas(GAS_FOR_ADD_LIQUIDITY * 5)
+                .unstake_lp_shares_after_getting_share_price(amount),
         )
         .then(
             ext_ref_finance::ext(
                 near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
             )
+            .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
             .remove_liquidity_by_tokens(
                 REF_CONFIG.pool_id,
@@ -69,6 +68,7 @@ impl Contract {
             ext_ref_finance::ext(
                 near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
             )
+            .with_attached_deposit(ONE_YOCTO)
             .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
             .withdraw(
                 near_sdk::AccountId::try_from(self.usn_token_account_id.to_string()).unwrap(),
@@ -168,13 +168,19 @@ impl RefCallbacks for Contract {
         #[callback_result] call_result: Result<U128, PromiseError>,
     ) -> Promise {
         let share_price: U128 = call_result.unwrap(); // TODO : check what the unit is, 100000000 ?
-        let shares_to_unstake: U128 = U128::from(share_price.0 * amount / 99500000u128);
+        let shares_to_unstake: U128 = U128::from(amount / share_price.0);
         // Set 0.5% buffer in order to prevent the situation failing to withdraw
+
+        // let result = ext_ref_finance::ext(
+        //     near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
+        // )
+        // .mft_balance_of(REF_CONFIG.token_id.to_string(), env::current_account_id())
+
         ext_ref_finance::ext(
             near_sdk::AccountId::try_from(REF_CONFIG.farm_address.to_string()).unwrap(),
         )
-        .with_attached_deposit(ONE_NEAR)
-        .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
+        .with_attached_deposit(ONE_YOCTO)
+        .with_static_gas(GAS_FOR_ADD_LIQUIDITY * 5)
         .unlock_and_withdraw_seed(
             format!("{}@{}", REF_CONFIG.ref_address, REF_CONFIG.pool_id),
             U128::from(0u128),
