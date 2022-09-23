@@ -69,7 +69,7 @@ impl Contract {
                 near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
             )
             .with_attached_deposit(ONE_YOCTO)
-            .with_static_gas(GAS_FOR_ADD_LIQUIDITY)
+            .with_static_gas(GAS_FOR_ADD_LIQUIDITY * 5)
             .withdraw(
                 near_sdk::AccountId::try_from(self.usn_token_account_id.to_string()).unwrap(),
                 amount.into(),
@@ -168,7 +168,7 @@ impl RefCallbacks for Contract {
         #[callback_result] call_result: Result<U128, PromiseError>,
     ) -> Promise {
         let share_price: U128 = call_result.unwrap(); // TODO : check what the unit is, 100000000 ?
-        let shares_to_unstake: U128 = U128::from(amount / share_price.0);
+        let shares_to_unstake: U128 = U128::from(100500000u128 * amount / share_price.0);
         // Set 0.5% buffer in order to prevent the situation failing to withdraw
 
         // let result = ext_ref_finance::ext(
