@@ -167,10 +167,11 @@ impl RefCallbacks for Contract {
         amount: Balance,
         #[callback_result] call_result: Result<U128, PromiseError>,
     ) -> Promise {
-        let share_price: U128 = call_result.unwrap(); // TODO : check what the unit is, 100000000 ?
+        let share_price: U128 = call_result.unwrap(); // unit : 100000000
         let shares_to_unstake: U128 = U128::from(100500000u128 * amount / share_price.0);
         // Set 0.5% buffer in order to prevent the situation failing to withdraw
 
+        // TODO(WIP) : in case that there is not enough share left, withdraw it as much as possible
         // let result = ext_ref_finance::ext(
         //     near_sdk::AccountId::try_from(REF_CONFIG.ref_address.to_string()).unwrap(),
         // )
